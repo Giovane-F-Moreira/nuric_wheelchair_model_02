@@ -1,0 +1,320 @@
+<html>
+    <head>
+        <!--  load these links without specifying http or https -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css2?family=Odibee+Sans&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+       <!--  <link rel="shortcut icon" href="./assets/images/favicon.png" type="image/x-icon">
+        <link rel="stylesheet" href="./assets/css/style.css">-->
+
+        <!--  Roslibjs -->
+        <script src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+        <script src="../build/roslib.js"></script>
+
+    <title>API_GProxemic</title>
+        <style>
+            #mapid{ 
+                height: 300px; 
+                width: 300px;
+            }
+            #DivA{
+                border-width:2px;
+                width: 50%;
+                height: 100px;
+                left:0px;
+                float: left;
+            }
+            #DivLateral{
+                border-width:2px;
+                width: 50%;
+                height: 100px;
+                float: left;
+            }
+ 
+        </style>
+    </head>
+    <body>
+        <div>            
+            <div >                             
+                <center><h1>GProxemic_API</h1></center>
+                <h2>Step 1:</h2>
+                <h6>Geolocation by IP with HTML5</h6>
+                <p id="demo">Click the button to receive your location in Latitude and Longitude:</p>
+                <button onclick="getLocation()">Clique Here</button>
+                <script>
+                var x=document.getElementById("demo");
+                function getLocation()
+                {
+                if (navigator.geolocation)
+                    {
+                    navigator.geolocation.getCurrentPosition(showPosition);
+                    }
+                else{x.innerHTML="Your browser does not support Geolocation";}
+                }
+                function showPosition(position)
+                {
+                x.innerHTML="Latitude: " + position.coords.latitude +
+                "<br>Longitude: " + position.coords.longitude; 
+                }
+                </script>
+
+            </div>
+            <br>
+                <div class="group">
+                    <div id="DivA">
+                        <h2>Step 2:</h2>
+                        <h6>API Mapbox</h6>
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" id="latitude" placeholder="Latitude">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="longitude" placeholder="Longitude">
+                            </div><br><br>
+                            <div class="form-group">
+                                <label for="exampleFormControlTextarea1">API response filtering incoming GeoJson</label>
+                                <textarea class="form-control" id="resultados" rows="3"></textarea><br>
+                            </div>
+                            <button type="button" onclick="processar()" class="btn btn-outline-primary">Buscar</button>  
+
+                            <p>Coordinates Arequipa: -16.409047 , -71.537451 Coordinates Manhatan: -73.989 , 40.733</p>
+                        </div>                
+                    </div>
+
+                    <!-- The map here  -->
+                    <div id="DivLateral">
+                        <div id="mapid"></div>
+                    </div>
+                    
+                </div>
+            
+                <div><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                    <h2>Step 3:</h2>
+                    <h6>Comunication with ROS</h6>
+                    <p>Run the following commands in the terminal then refresh this page. Check the JavaScript
+                        console for the output.</p>
+                    <ol>
+                        <li><tt>roscore</tt></li>
+                        <li><tt>rostopic list</tt></li>
+                        <li><tt>rostopic pub /listener std_msgs/String " Office, Pessoal proxemic zone, 2.0 "</tt></li>
+                        <li><tt>rostopic echo /listener </tt></li>
+                        <li><tt>rosrun rospy_tutorials add_two_ints_server</tt></li>
+                        <li><tt>roslaunch rosbridge_server rosbridge_websocket.launch</tt></li>
+                    </ol>
+                    <div id="statusIndicator">
+                        <p id="connecting">
+                        Connecting to rosbridge...
+                        </p>
+                        <p id="connected" style="color:#00D600; display:none">
+                        Connected
+                        </p>
+                        <p id="error" style="color:#FF0000; display:none">
+                        Connection did not start or failed
+                        </p>
+                        <p id="closed" style="display:none">
+                        Connection closed.
+                        </p><br><br>
+                        <h2>Step 4:</h2>
+                        <h6>Automatically modeling the Gausian according to features</h6>
+                        <p>This part will be in the code made by João Pedro and Marcelo</p><br><br><br><br><br>
+                    </div>
+                </div>        
+            </div>                    
+        </div>
+
+        <!-- Make sure you put this AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+        <script>
+            var latitude= -16.409047;
+            var longitude= -71.537451;
+            var mymap = L.map('mapid').setView([latitude, longitude], 13);
+            var popup = L.popup();  
+            var Proxemic = '';
+
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw'
+            }).addTo(mymap);
+            
+            function onMapClick(e) {
+                popup
+                    .setLatLng(e.latlng)
+                    .setContent("You clicked the map at " + e.latlng.toString())
+                    .openOn(mymap);
+            }
+
+            function processar(){
+
+                var latidudeInput = document.getElementById('latitude').value;
+                var longitudeInput = document.getElementById('longitude').value;
+                var token = "pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw";    
+                var url = "https://api.mapbox.com/geocoding/v5/mapbox.places/"+latidudeInput+","+longitudeInput+".json?types=poi&access_token="+token;
+
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", url, false);
+                xhttp.send();//A execução do script pára aqui até a requisição retornar do servidor
+
+                var result = xhttp.responseText;
+                var json = JSON.parse(xhttp.responseText);
+
+                if(json.features == null || json.features == ""){
+                    alert('As geographic coordinates do not have resources in the database');
+                }else{
+                    var category = json.features[0].properties.category; 
+                    var place = json.features[0].place_name;
+
+                    if( category == 'business, service, office'){
+                        Proxemic = "office, pessoal, 2.0"
+                        document.getElementById('resultados').innerText="The environment in which the robot finds itself is an office, the robot will have to respect the pessoal proxemic zone, with a limit of about 3 meters";                   
+                    }
+                }              
+            }
+
+        mymap.on('click', onMapClick);
+        </script>
+
+        <script>
+            // Connecting to ROS
+            // -----------------
+            var ros = new ROSLIB.Ros();
+
+            // If there is an error on the backend, an 'error' emit will be emitted.
+            ros.on('error', function(error) {
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('connected').style.display = 'none';
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('error').style.display = 'inline';
+                console.log(error);
+            });
+
+            // Find out exactly when we made a connection.
+            ros.on('connection', function() {
+                console.log('Connection made!');
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('connected').style.display = 'inline';
+            });
+
+            ros.on('close', function() {
+                console.log('Connection closed.');
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('connected').style.display = 'none';
+                document.getElementById('closed').style.display = 'inline';
+            });
+
+            // Create a connection to the rosbridge WebSocket server.
+            ros.connect('ws://localhost:9090');
+
+            // Publishing a Topic
+            // ------------------
+
+            // First, we create a Topic object with details of the topic's name and message type.
+            var listener = new ROSLIB.Topic({
+                ros : ros,
+                name : '/listener',
+                messageType : 'std_msgs/Proxemic'
+            });
+
+            //var Proxemic = "office, pessoal, 3.0"
+
+            // And finally, publish.
+            cmdVel.publish(listener);
+
+
+            // Then we add a callback to be called every time a message is published on this topic.
+            listener.subscribe(function(message) {
+                console.log('Received message on ' + listener.name + ': ' + message.data);
+
+                // If desired, we can unsubscribe from the topic as well.
+                listener.unsubscribe();
+            });
+
+            // Calling a service
+            // -----------------
+
+            // First, we create a Service client with details of the service's name and service type.
+            var addTwoIntsClient = new ROSLIB.Service({
+                ros : ros,
+                name : '/add_two_ints',
+                serviceType : 'rospy_tutorials/AddTwoInts'
+            });
+
+            // Then we create a Service Request. The object we pass in to ROSLIB.ServiceRequest matches the
+            // fields defined in the rospy_tutorials AddTwoInts.srv file.
+            var request = new ROSLIB.ServiceRequest({
+                a : 1,
+                b : 2
+            });
+
+            // Finally, we call the /add_two_ints service and get back the results in the callback. The result
+            // is a ROSLIB.ServiceResponse object.
+            addTwoIntsClient.callService(request, function(result) {
+                console.log('Result for service call on ' + addTwoIntsClient.name + ': ' + result.sum);
+            });
+
+            // Advertising a Service
+            // ---------------------
+
+            // The Service object does double duty for both calling and advertising services
+            var setBoolServer = new ROSLIB.Service({
+                ros : ros,
+                name : '/set_bool',
+                serviceType : 'std_srvs/SetBool'
+            });
+
+            // Use the advertise() method to indicate that we want to provide this service
+            setBoolServer.advertise(function(request, response) {
+                console.log('Received service request on ' + setBoolServer.name + ': ' + request.data);
+                response['success'] = true;
+                response['message'] = 'Set successfully';
+                return true;
+            });
+
+            // Setting a param value
+            // ---------------------
+
+            ros.getParams(function(params) {
+                console.log(params);
+            });
+
+            // First, we create a Param object with the name of the param.
+            var maxVelX = new ROSLIB.Param({
+                ros : ros,
+                name : 'max_vel_y'
+            });
+
+            //Then we set the value of the param, which is sent to the ROS Parameter Server.
+            maxVelX.set(0.8);
+            maxVelX.get(function(value) {
+                console.log('MAX VAL: ' + value);
+            });
+
+            // Getting a param value
+            // ---------------------
+
+            var favoriteColor = new ROSLIB.Param({
+                ros : ros,
+                name : 'favorite_color'
+            });
+
+            favoriteColor.set('red');
+            favoriteColor.get(function(value) {
+                console.log('My robot\'s favorite color is ' + value);
+            });
+        </script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./scripts/eventemitter2.min.js"></script>
+        <script type="text/javascript" src="./scripts/bootbox.min.js"></script>
+        <script type="text/javascript" src="./scripts/roslib.min.js"></script> 
+        <script type="text/javascript" src="./scripts/clickButtons.js"></script>
+        <script type="text/javascript" src="./js/main.js"></script>
+    </body>
+</html>

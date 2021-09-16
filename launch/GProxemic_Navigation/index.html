@@ -1,0 +1,524 @@
+<html>
+    <head>
+        <!--  load these links without specifying http or https -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" /> 
+        <link href="https://fonts.googleapis.com/css2?family=Odibee+Sans&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous" />
+        
+        <!--  Roslibjs -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/roslibjs/1.1.0/roslib.js" integrity="sha512-pCcZE7tYxCroXRw6OsC4hnCKF+cYszKf2I4++0xASgb4wm7rgf8tY65tmmgnvb9zxWQt1JeOE/lKPTdp9FLoCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <meta charset="UTF-8">
+
+        <!-- Make sure you put this AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+
+    <title>API_GProxemic</title>
+        <style>
+            #mapid { 
+                height: 300px; 
+                width: 300px;
+            }
+
+            body { 
+                background-image: linear-gradient(45deg, #084177, #687466, #cd8d7b, #fbc498);
+                background-attachment: fixed;
+            }
+
+            .round {
+                border-radius: 100%;
+                overflow: hidden;
+                height: 12px;
+                width: 12px;
+                background: red;
+            }
+            
+            .loading {
+                width: 100%;
+            }
+
+            #mapid {
+                width: 500px;
+                height: 500px;
+                border-radius: 50%;
+               
+                
+            }
+
+            input{
+                margin-bottom: 0.5rem;
+            }
+
+            div.titulo {
+                font-size: 2vw;
+                text-align: center;
+                padding: 3vw;
+                position: relative;
+            }
+
+            .form-check-label { 
+                text-align: left;
+            }
+
+            .description { 
+                text-align: center;
+                font-size: 18px;
+            }
+
+            label { 
+                font-size: 25px;
+            }
+
+            .results {
+                margin-top: 4vw;
+            }
+
+            #direction {
+                margin-top: 40px;
+                margin-bottom: 40px;
+            }
+
+            #foot {
+                margin-top: 100px;
+            }
+
+ 
+        </style>
+    </head>
+    <body>       
+        <div class="container">
+            <div class="titulo">                                        
+                <img src="img/Logo-GProxemicNavigations.png" />
+            </div>
+            <div class="row" style="margin-bottom: 50px; margin-top: 80px;">
+                <div class="col-sm-6"> 
+                    <div id='mapid'></div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="flexSwitch" checked onclick="automatic()">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Automatic</label>
+                    </div>
+                    <div class="description">
+                        <p>
+                            The GProxemic API was built to help robots adapt their proxemic zone automatically depending on environment, culture, country or region. This responsiveness acquired by the robot after using the API, ensures an improvement in socialization between robots and humans.
+                        </p>
+                    </div>
+                    <center>
+                        <div  id="divManual" style="display: none;">
+                            <form>
+                                <input type="text" class="form-control" id="latitude" placeholder="Latitude" required />
+                                <input type="text" class="form-control" id="longitude" placeholder="Longitude" required />
+                                <button type="submit" onclick="getLocation()" class="btn btn-outline-dark">Search</button>
+                            </form>
+                            <span style="font-size: 12px;">Exemple Coordinates: </sapn><br>
+                            <span>Manhatan('Office')= -73.989 , 40.733</sapn><br>
+                            <span>Berkeley('Coffee')= -122.2727469 , 37.8715926</sapn>
+                        </div>
+                    </center> 
+                </div>
+            </div>     
+            <center>
+                <div class="cenario">
+                    <div class="row">
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1">                           
+                        </div>
+                        <div class="col-sm-1">
+                            <!-- <span><b>Results:</b></span><p>Personal</p> -->
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img id="step4" src="img/zone-proxemicOFF.png" width="120" />
+                        </div>
+                        <div class="col-sm-2"> 
+                            <img src="img/arrow4.png" width="120" />
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img id="step5" src="img/ROSLibJsOFF.png" width="120" />
+                        </div>
+                        <div class="col-sm-2"> 
+                            <!-- <span><b>Results:</b></span><p> /Proxemic</p><span> Personal</span> -->
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img src="img/arow-3r.png" width="120" />
+                        </div>
+                        <div class="col-sm-1">
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1">
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img src="img/arrow-5rrrr.png" width="120" />
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-1">
+                           <!--  <span><b>Results:</b></span><p>Office</p>    -->
+                        </div>
+                        <div class="col-sm-1">
+                            <img id="step3" src="img/sateliteOFF.png" width="100" />
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-4">
+                            <img id="step9" src="img/powerOFF.png" width="80" style="margin-left: 80px;" /><br> 
+                            <p id="connecting">
+                                Connecting to rosbridge...
+                            </p><br>
+                            <h4 id="connected" style="color:#00D600; display:none; margin-left: 80px;">
+                                Connected
+                            </h4><br>
+                            <p id="error" style="color:#FF0000; display:none; margin-left: 80px;">
+                                Connection did not start or failed
+                            </p><br>
+                            <p id="closed" style="display:none; margin-left: 80px;">
+                                Connection closed.   
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img id="step6" src="img/MatlabOFF.png" width="120" />
+                        </div>
+                        <div class="col-sm-1">
+                           <!--  <span style="margin-top:30px;"><b>Results:</b></span><p>Algorithm: Social Navigation</p> -->
+                        </div>
+                        <div class="col-sm-1">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1">   
+                        </div>
+                        <div class="col-sm-1">
+                            <img src="img/arrow-2r.png" width="120" /> 
+                        </div>
+                        <div class="col-sm-1">
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1">
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img src="img/arrow6.png" width="120" />
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-1">
+                           <!--  <span style="margin-top:30px;"><b>Results:</b></span><p> -73.989</p><p>40.733</p>  -->                            
+                        </div>
+                        <div class="col-sm-1"> 
+                            <img id="step2" src="img/geolocationOFF.png" width="100" />
+                        </div>
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-2"> 
+                            <img id="step7" src="img/ROSOFF.png" width="120" />
+                        </div>
+
+                        <div class="col-sm-1"> 
+                           <!--  <span style="margin-top:30px;"><b>Results:</b></span><p>Manipulates sensors and actuators to move the robot</p>  -->
+
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2"> 
+                        </div>
+                        <div class="col-sm-1">                                       
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-1">
+
+                        </div>
+                        <div class="col-sm-2"> 
+                            <img src="img/arrow1.png" width="120"/>
+                        </div>
+                        <div class="col-sm-1">
+                            <img src="img/arrow7.png" width="120"/>
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-1"> 
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-5">
+                            
+                        </div>                  
+                        <div class="col-sm-2">
+                            <img id="step1" src="img/robo.png" width="120"/>
+                        </div>
+                        <div class="col-sm-1">
+                            <img src="img/shoe.svg" width="30" style="margin-top: 100px;"/>
+                        </div>
+                        <div class="col-sm-1">
+                            <img src="img/shoe.svg" width="30" style="margin-top: 100px;"/> 
+                        </div>
+                        <div class="col-sm-1">
+                            <img id="step8" src="img/pessoa(6).png" width="200px;" /> 
+                        </div>
+                        <div class="col-sm-2"> 
+                        </div>
+                    </div>
+                </div>
+            </center>
+            <div>
+                <p>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/br/" title="Flaticon">www.flaticon.com</a><br>Leaflet | Map data © OpenStreetMap contributors, Imagery © Mapbox</p>               
+            </div>       
+        </div>                          
+    </body>
+    <script>
+        var latidudeInput;
+        var longitudeInput;
+        category = "default";
+        checkboxAutomatic = document.getElementById('flexSwitch');
+
+        getLocation();
+
+        function getLocation(){
+
+            //Se o o checkbox estiver com automatico desligado e os campos estiverem em branco entra no if
+            if (!checkboxAutomatic.checked && document.getElementById('longitude').value == '' || document.getElementById('longitude').value == null ||document.getElementById('latitude').value == '' || document.getElementById('latitude').value == null){
+                alert('Fill in the Latitude and Longitude fields, or use it automatically and allow the location');
+            }else if(checkboxAutomatic.checked){
+                latidudeInput = documernt.getElementById('latitude').value;
+                longitudeInput = documernt.getElementById('Longitude').value;
+            }else{
+                //Se o o checkbox estiver no automatico e o navagator suportar geolocalização entra no if
+                if (checkboxAutomatic.checked && navigator.geolocation){
+                    alert(navigator.geolocation.getCurrentPosition);
+                    navigator.geolocation.getCurrentPosition(showPosition());
+                }else{
+                    x.innerHTML="Your browser does not support Geolocation";
+                }
+
+                //Rever mapa
+                const marker = new mapboxgl.Marker()
+                .setLngLat([latidudeInput, longitudeInput])
+                .addTo(map);
+            }
+        }
+
+        function showPosition() {
+
+            latidudeInput = position.coords.latitude;
+            longitudeInput = position.coords.longitude;
+            alert(document.getElementById('latitude').value);
+
+            if (checkboxAutomatic.checked) {
+                latidudeInput = position.coords.latitude;
+                longitudeInput = position.coords.longitude;
+                
+            }else{
+                //alert(document.getElementById('latitude').value);
+                //alert(document.getElementById('longitude').value);
+            }
+            var token = "pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw";    
+            var url = "https://api.mapbox.com/geocoding/v5/mapbox.places/"+latidudeInput+","+longitudeInput+".json?types=poi&access_token="+token;
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", url, false);
+            xhttp.send();//A execução do script pára aqui até a requisição retornar do servidor
+
+            var result = xhttp.responseText;
+            var json = JSON.parse(xhttp.responseText);
+
+            if(json.features == null || json.features == ""){
+                alert('As geographic coordinates do not have resources in the database, the zone proxemic is default');
+            }else{
+                category = json.features[0].properties.category; 
+                var place = json.features[0].place_name;
+
+                if( category == 'business, service, office'){
+                    FilterResult = "personal"
+                }
+                if( category == 'restaurant'){
+                    FilterResult = "social"
+                }
+                if( category == 'mall'){
+                    FilterResult = "public"
+                }
+                if( category == 'office'){
+                    FilterResult = "social"
+                }
+                if( category == 'business, service, office'){
+                    FilterResult = "social"
+                }
+            }      
+        }
+
+        function automatic() {
+            if (checkboxAutomatic.checked) {   
+                document.getElementById('divManual').style.display = 'none';
+            }else{
+                document.getElementById('divManual').style.display = 'block';
+            } 
+        }
+ 
+        var latitude= -16.409047;
+        var longitude= -71.537451;
+        var mymap = L.map('mapid').setView([latitude, longitude], 13);
+        var popup = L.popup();  
+        var FilterResult = '';
+
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw'
+        }).addTo(mymap);
+
+        function onMapClick(e) {
+            popup
+                .setLatLng(e.latlng)
+                .setContent("You clicked the map at " + e.latlng.toString())
+                .openOn(mymap);
+        }
+
+        mymap.on('click', onMapClick);
+
+        // Connecting to ROS
+        // -----------------
+        var ros = new ROSLIB.Ros();
+
+        // If there is an error on the backend, an 'error' emit will be emitted.
+        ros.on('error', function(error) {
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('connected').style.display = 'none';
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('error').style.display = 'inline';
+            console.log(error);
+        });
+
+        // Find out exactly when we made a connection.
+        ros.on('connection', function() {
+            console.log('Connection made!');
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('connected').style.display = 'inline';
+
+            //modifi icons
+            document.getElementById('step1').src="img/robo.png";                   
+            document.getElementById('step2').src="img/geolocationOFF.png";
+            document.getElementById('step3').src="img/sateliteOFF.png";
+            document.getElementById('step4').src="img/zone-proxemicOFF.png";
+            document.getElementById('step5').src="img/ROSLibJsOFF.png";
+            document.getElementById('step6').src="img/MatlabOFF.png";
+            document.getElementById('step7').src="img/ROSOFF.png";
+            document.getElementById('step8').src="img/pessoa(7).png";
+            document.getElementById('step9').src="img/powerOFF.png";
+
+            //modifi icons
+            document.getElementById('step1').src="img/robo.png";                   
+            document.getElementById('step2').src="img/geolocation.png";
+            document.getElementById('step3').src="img/satelite.png";
+            document.getElementById('step4').src="img/zone-proxemic.png";
+            document.getElementById('step5').src="img/ROSLibJs.png";
+            document.getElementById('step6').src="img/Matlab.png";
+            document.getElementById('step7').src="img/ROS.png";
+            document.getElementById('step8').src="img/pessoa(7).png";
+            document.getElementById('step9').src="img/power.png";
+        });
+
+        ros.on('close', function() {
+            console.log('Connection closed.');
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('connected').style.display = 'none';
+            document.getElementById('closed').style.display = 'inline';
+
+            //modifi icons
+            document.getElementById('step1').src="img/robo.png";                   
+            document.getElementById('step2').src="img/geolocationOFF.png";
+            document.getElementById('step3').src="img/sateliteOFF.png";
+            document.getElementById('step4').src="img/zone-proxemicOFF.png";
+            document.getElementById('step5').src="img/ROSLibJsOFF.png";
+            document.getElementById('step6').src="img/MatlabOFF.png";
+            document.getElementById('step7').src="img/ROSOFF.png";
+            document.getElementById('step8').src="img/pessoa(7).png";
+            document.getElementById('step9').src="img/powerOFF.png";
+        });
+
+        // Create a connection to the rosbridge WebSocket server.
+        ros.connect('ws://localhost:9090');
+
+        // Publishing a Topic
+         var listener = new ROSLIB.Topic({
+            ros : ros,
+            name : '/proxemic',
+            messageType : 'std_msgs/String'
+        });   
+
+        var teste = "shooping";
+        var message = new ROSLIB.Message({
+            data : category
+        });
+
+        listener.publish(message);
+
+        listener.subscribe(function(message) {
+        console.log('Rostopic echo  ' + listener.name + ': ' + message.data);
+        listener.unsubscribe();
+        });
+ 
+        /*  function graphVel(){
+            var listener = new ROSLIB.Topic({
+                ros : ros,
+                name : '/ema/control/speed',
+                messageType : 'std_msgs/Float64'
+            });
+
+            listener.subscribe(function(message) {
+ 
+
+                message.data+10.0;
+               
+                listener.unsubscribe();
+            });
+            
+        };
+        graphVel(); */
+    
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+</html>

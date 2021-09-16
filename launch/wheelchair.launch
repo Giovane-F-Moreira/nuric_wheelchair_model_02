@@ -2,12 +2,29 @@
 
 <launch>
 
+    <!--1ª add for slam -->
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="recording" value="false"/>
+        <arg name="headless" default="false"/>
+        <arg name="debug" value="false"/>
+
+        <param name="use_sim_time" value="true"/>
+
+        <param name="frame_id" type="string" value="laser_joint"/>
+        <arg name="world_name" value="worlds/empty.world" />
+    <!-- the end 1ª step-->
+
     <include file="$(find nuric_wheelchair_model_02)/launch/empty_world.launch" >
+        <!--2ª add for slam -->
+            <arg name="debug" value="$(arg debug)" />
+        <!--the end 2ª step -->
         <arg name="paused" value="false"/>
         <arg name="gui" value="true"/>
         <arg name="headless" value="false"/>
 
-        <arg name="world_name" value="worlds/empty.world" />
+        <!--<arg name="world_name" value="worlds/empty.world" />-->
     </include>
 
     <include file="$(find nuric_wheelchair_model_02)/launch/wheelchair_base.launch" />
@@ -18,5 +35,50 @@
 
 	<!-- get_caster_joints node -->
 	<node respawn="true" pkg="nuric_wheelchair_model_02" type="get_caster_joints.py" name="get_caster_joints" />
+
+    <!--3ª add for slam -->
+        <param name="base_frame" value="base_footprint"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="map_update_interval" value="5.0"/>
+        <param name="maxUrange" value="6.0"/>
+        <param name="maxRange" value="8.0"/>
+        <param name="sigma" value="0.05"/>
+        <param name="kernelSize" value="1"/>
+        <param name="lstep" value="0.05"/>
+        <param name="astep" value="0.05"/>
+        <param name="iterations" value="5"/>
+        <param name="lsigma" value="0.075"/>
+        <param name="ogain" value="3.0"/>
+        <param name="lskip" value="0"/>
+        <param name="minimumScore" value="100"/>
+        <param name="srr" value="0.01"/>
+        <param name="srt" value="0.02"/>
+        <param name="str" value="0.01"/>
+        <param name="stt" value="0.02"/>
+        <param name="linearUpdate" value="0.5"/>
+        <param name="angularUpdate" value="0.436"/>
+        <param name="temporalUpdate" value="-1.0"/>
+        <param name="resampleThreshold" value="0.5"/>
+        <param name="particles" value="80"/>
+        <!--
+        <param name="xmin" value="-50.0"/>
+        <param name="ymin" value="-50.0"/>
+        <param name="xmax" value="50.0"/>
+        <param name="ymax" value="50.0"/>
+        make the starting size small for the benefit of the Android client's memory...
+        -->
+        <param name="xmin" value="-1.0"/>
+        <param name="ymin" value="-1.0"/>
+        <param name="xmax" value="1.0"/>
+        <param name="ymax" value="1.0"/>
+
+        <param name="delta" value="0.05"/>
+        <param name="llsamplerange" value="0.01"/>
+        <param name="llsamplestep" value="0.01"/>
+        <param name="lasamplerange" value="0.005"/>
+        <param name="lasamplestep" value="0.005"/>
+
+        <node pkg="rosbag" type="play" name="rosbag" args="--clock -r 5"/>
+    <!--the end 3ª step -->
 
 </launch>

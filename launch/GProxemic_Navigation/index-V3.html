@@ -1,0 +1,604 @@
+<html>
+    <head>
+        <!--  load these links without specifying http or https -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css2?family=Odibee+Sans&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+       <!--  <link rel="shortcut icon" href="./assets/images/favicon.png" type="image/x-icon">
+        <link rel="stylesheet" href="./assets/css/style.css">-->
+
+        <!--  Roslibjs -->
+        <script src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+        <script src="../build/roslib.js"></script>
+
+    <title>API_GProxemic</title>
+        <style>
+            #mapid { 
+                height: 300px; 
+                width: 300px;
+
+            }
+
+            body { 
+                background-image: linear-gradient(45deg, #084177, #687466, #cd8d7b, #fbc498);
+                background-attachment: fixed;
+            }
+
+            #DivRight {
+                border-width:2px;
+                width: 50%;
+                height: 100px;
+                right:0px;
+                display: inline-table;
+                text-align: center;
+            }
+
+            .round {
+                border-radius: 100%;
+                overflow: hidden;
+                height: 12px;
+                width: 12px;
+                background: red;
+            }
+            
+            .loading {
+                width: 100%;
+            }
+
+            #DivLeft{
+                border-width:2px;
+                width: 50%;
+                height: 100px;
+                display:  inline-table;
+                border-color: black;
+                border: 15px;
+            }
+
+            #mapid {
+                width: 500px;
+                height: 500px;
+                border-radius: 50%;               
+            }
+
+            input{
+                margin-bottom: 0.5rem;
+            }
+
+            div.container {
+                height: 100%;
+                /*background: -webkit-linear-gradient(top, #088fad 20%, #00d5ff 100%);*/
+            }
+
+            div.titulo {
+                font-size: 2vw;
+                text-align: center;
+                padding: 3vw;
+                position: relative;
+            }
+
+            div.op1 {
+                width: 38%;
+                display: inline-block;
+                font-size: 3vw;
+                text-align: center;
+                padding: 5vw 0vw 5vw 0vw;
+                min-width:40vw;
+            }
+
+            div.op2 {
+                width: 38%;
+                display: inline-block;
+                margin-right: 0vw;
+                margin-top: 3vw;
+                font-size: 2vw;
+                padding: 5vw 0vw 5vw 0vw;
+                min-width:40vw;
+                float: right;
+            }
+
+            .form-check-label { 
+                text-align: left;
+            }
+
+            .description { 
+                text-align: center;
+                font-size: 18px;
+            }
+
+            label { 
+                font-size: 25px;
+            }
+
+            .results {
+                margin-top: 4vw;
+            }
+
+            #direction {
+                margin-top: 40px;
+                margin-bottom: 40px;
+            }
+
+            #gproxemic {
+                background-color: rgb(252, 252, 252);
+                border-radius: 10px;
+            }
+
+            .cenario{
+                margin-left: 5%;
+                margin-right: 5%;
+            }
+
+            #box {
+                background-color: #bb7366;
+                height: 180px;
+                border-radius: 5%;
+            }
+
+            #foot {
+                margin-top: 100px;
+            }
+
+ 
+        </style>
+    </head>
+    <body>
+        <div>
+            <div class="container">
+                <div class="col-md-12"></div>
+                <div class="titulo">                                        
+                    <img src="img/Logo-GProxemicNavigations.png" />
+                </div>
+                <div class="op1">
+                    <div id='DivLeft'>                  
+                        <div id='mapid'></div>                       
+                    </div>
+                </div>
+
+                <div class="op2">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="flexSwitch" checked onclick="automatic()">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Automatic</label>
+                    </div>
+                    <div class="description">
+                        <p>A API GProxemic foi construida no intuito de ajudar robos a adaptarem sua zona proxemica automaticamente em função do ambiente, cultura, pais ou região. Essa responsividade adquirida pelo robo após o uso da API, garante uma melhoria na  socialização entre robos e humanos.</p>
+                    </div>
+                    <center>
+                        <div id='DivRight' style="display: none;">
+                            <input type="text" class="form-control" id="latitude" placeholder="Latitude" required />
+                            <input type="text" class="form-control" id="longitude" placeholder="Longitude" required />
+                        </div>
+                        <button type="button" onclick="getLocation()" class="btn btn-outline-primary">Buscar</button>
+                    </center> 
+                </div>
+            </div>           
+
+            <br>                                       
+                <div ><br>
+
+                    <div id="statusIndicator">
+                        
+                        <br><br><br><br><br><br><br><br>                   
+
+                        <center>
+                            <div class="cenario">
+                                <div class="row" id="gproxemic">
+                                    <h3>Arquiteture Gproxemic</h3><br>
+                                    <div class="col-sm-1">                                       
+                                    </div>
+                                    <div class="col-sm-1" id="box">
+                                        <img id="step1" src="img/geolocationOFF.png" width="60"/>
+                                        <div>
+                                            <span>HTML5 and JS</span>
+                                            <span>Coordenadas</span>
+                                            <span>-40,541</span>
+                                            <span>17,541</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-1">
+                                        <img id="step2" src="img/arrowOFF.png" width="35" />
+                                    </div>
+
+                                    <div class="col-sm-1">
+                                        <img id="step3" src="img/arrowOFF.png" width="35" />
+                                    </div>
+
+                                    <div class="col-sm-1" id="box">
+                                        <img id="step4" src="img/sateliteOFF.png" width="60"/>
+                                        <div>
+                                            <span>Mapbox</span>
+                                            <span>Brasil</span>
+                                            <span>Bahia</span>
+                                            <span>Conquista</span>
+                                            <span>Office</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-1">
+                                        <img id="step5" src="img/arrowOFF.png" width="35" />
+                                    </div>
+
+                                    <div class="col-sm-1">
+                                        <img id="step6" src="img/arrowOFF.png" width="35" />
+                                    </div>
+
+                                    <div class="col-sm-1" id="box">
+                                        <img id="step7" src="img/zone-proxemic.png" width="60"/>
+                                        <div>
+                                            <span>Algoritmo</span>
+                                            <span>Definindo Proxemica</span>
+                                            <span>Social</span>
+                                            <span>2 metros</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-1">
+                                        <img id="step8" src="img/arrowOFF.png" width="35" />
+                                    </div>
+
+                                    <div class="col-sm-1">
+                                        <img id="step9" src="img/arrowOFF.png" width="35" />
+                                    </div>
+
+                                    <div class="col-sm-1" id="box">
+                                        <img id="step10" src="img/ROSLibJs.png" width="100" />
+                                        <div>
+                                            <span>Cria e inseri topico no ROS</span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-1">                                       
+                                        </div>
+                                        <div class="col-sm-1" id="direction">
+                                            <img id="step9" src="img/arrowOFFUp.png" width="70" />
+                                        </div>
+                                        <div class="col-sm-8">                                       
+                                        </div>
+                                        <div class="col-sm-1" id="direction">
+                                            <img id="step9" src="img/arrowOFFDown.png" width="70" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-1">                                       
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFUp.png" width="70" />
+                                    </div>
+                                    <div class="col-sm-8">                                       
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFDown.png" width="70" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-1">                                       
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFUp.png" width="70" />
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFDiag.png" width="35" />
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFLeft.png" width="35" />
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFLeft.png" width="35" />
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFLeft.png" width="35" />
+                                    </div>
+                                    <div class="col-sm-1" id="direction">
+                                        <img id="step9" src="img/arrowOFFLeft.png" width="35" />
+                                    </div>
+                                    <div class="col-sm-1" id="box">
+                                        <img id="step7" src="img/ROS.png" width="60"/>
+                                        <div>
+                                            <span>ROS</span>
+                                            <span>Definindo Proxemica</span>
+                                            <span>Social</span>
+                                            <span>2 metros</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-1">
+                                        <img id="step7" src="img/arrowOFFLeft.png" width="35"/>                                       
+                                    </div>
+                                    <div class="col-sm-1">
+                                        <img id="step7" src="img/arrowOFFLeft.png" width="35"/>                                       
+                                    </div>
+                                    <div class="col-sm-1" id="box">
+                                        <img id="step7" src="img/Matlab.png" width="60"/>
+                                        <div>
+                                            <span>Algoritmo</span>
+                                            <span>Definindo Proxemica</span>
+                                            <span>Social</span>
+                                            <span>2 metros</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-1"> 
+                                    </div>
+                                    <div class="col-sm-1"> 
+                                        <img id="step7" src="img/robo (1).png" width="120" />
+                                    </div>
+                                    <div class="col-sm-1"> 
+                                        <img id="foot" src="img/shoe-prints-solid.svg" width="50" />
+                                    </div>
+                                    <div class="col-sm-1"> 
+                                        <img id="foot" src="img/shoe-prints-solid.svg" width="50" />
+                                    </div>
+                                    <div class="col-sm-1"> 
+                                        <img id="foot" src="img/shoe-prints-solid.svg" width="50" />
+                                    </div>
+                                    <div class="col-sm-1"> 
+                                        <img id="step7" src="img/pessoa(5).png" width="250" />
+                                    </div>
+                                </div>
+                            </div>
+                        </center>
+
+
+                        <center>
+                            <p id="connecting">
+                                Connecting to rosbridge...
+                            </p>
+                            <p id="connected" style="color:#00D600; display:none">
+                                Connected
+                            </p>
+                            <p id="error" style="color:#FF0000; display:none">
+                                Connection did not start or failed
+                            </p>
+                            <p id="closed" style="display:none">
+                                Connection closed.                        
+                        </center>
+
+                        <div>
+                            <p>Ícones feitos por <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/br/" title="Flaticon">www.flaticon.com</a></p>
+                            <p>Leaflet | Map data © OpenStreetMap contributors, Imagery © Mapbox</p>
+                        </div>
+
+                    </div>
+                </div>        
+            </div>                    
+        </div>
+        <script>
+            function delay(ms) {
+                ms += new Date().getTime();
+                while (new Date() < ms){}
+             }
+            function getLocation(){
+                if (navigator.geolocation){
+                    navigator.geolocation.getCurrentPosition(showPosition);
+                }else{
+                    x.innerHTML="Your browser does not support Geolocation";
+                }
+            }
+
+            function showPosition(position) {
+                var latidudeInput;
+                var longitudeInput;
+                if (document.getElementById('flexSwitch').checked) {
+                    latidudeInput = position.coords.latitude;
+                    longitudeInput = position.coords.longitude;
+                }else{
+                    alert(document.getElementById('latitude').value);
+                    alert(document.getElementById('longitude').value);
+                }
+                var token = "pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw";    
+                var url = "https://api.mapbox.com/geocoding/v5/mapbox.places/"+latidudeInput+","+longitudeInput+".json?types=poi&access_token="+token;
+
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", url, false);
+                xhttp.send();//A execução do script pára aqui até a requisição retornar do servidor
+
+                var result = xhttp.responseText;
+                var json = JSON.parse(xhttp.responseText);
+
+                if(json.features == null || json.features == ""){
+                    alert('As geographic coordinates do not have resources in the database, the zone proxemic is default');
+                }else{
+                    var category = json.features[0].properties.category; 
+                    var place = json.features[0].place_name;
+
+                    if( category == 'business, service, office'){
+                        FilterResult = "office, pessoal, 2.0"
+                        document.getElementById('resultados').innerText="The environment in which the robot finds itself is an office, the robot will have to respect the pessoal proxemic zone, with a limit of about 3 meters";                   
+                    }
+
+                    processar();
+                }
+                delay(2000);
+                document.getElementById('step1').src="img/geolocation-s.png";
+                document.getElementById('step2').src="img/arrow.png";
+                document.getElementById('step3').src="img/arrow.png";
+                document.getElementById('step4').src="img/arrow.png";
+                document.getElementById('step5').src="img/satelite-s.png";
+                document.getElementById('step6').src="img/arrow.png";
+                document.getElementById('step7').src="img/arrow.png";
+                document.getElementById('step8').src="img/arrow.png";
+                document.getElementById('step9').src="img/robo2-s.png";
+               
+            }
+
+            function automatic() {
+                if (document.getElementById('flexSwitch').checked) {   
+                    document.getElementById('DivRight').style.display = 'none';
+                }else{
+                    document.getElementById('DivRight').style.display = 'block';
+                } 
+            }
+            </script>
+        <!-- Make sure you put this AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+        <script>
+            var latitude= -16.409047;
+            var longitude= -71.537451;
+            var mymap = L.map('mapid').setView([latitude, longitude], 13);
+            var popup = L.popup();  
+            var FilterResult = '';
+
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiZ2lvdmFuZWdoMyIsImEiOiJja3FsY2xpNXEzbXBjMnVsY3ptMnB4bmo0In0.sXvr8Qz9SO-DmcjfT84-sw'
+            }).addTo(mymap);
+
+            function onMapClick(e) {
+                popup
+                    .setLatLng(e.latlng)
+                    .setContent("You clicked the map at " + e.latlng.toString())
+                    .openOn(mymap);
+            }
+
+        mymap.on('click', onMapClick);
+        </script>
+
+        <script>
+            // Connecting to ROS
+            // -----------------
+            var ros = new ROSLIB.Ros();
+
+            // If there is an error on the backend, an 'error' emit will be emitted.
+            ros.on('error', function(error) {
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('connected').style.display = 'none';
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('error').style.display = 'inline';
+                console.log(error);
+            });
+
+            // Find out exactly when we made a connection.
+            ros.on('connection', function() {
+                console.log('Connection made!');
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('connected').style.display = 'inline';
+            });
+
+            ros.on('close', function() {
+                console.log('Connection closed.');
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('connected').style.display = 'none';
+                document.getElementById('closed').style.display = 'inline';
+            });
+
+            // Create a connection to the rosbridge WebSocket server.
+            ros.connect('ws://localhost:9090');
+
+            // Publishing a Topic
+            // ------------------
+
+            // First, we create a Topic object with details of the topic's name and message type
+            var proxemic = new ROSLIB.Topic({
+                ros : ros,
+                name : '/proxemic',
+                messageType : 'std_msgs/String'
+            });
+            
+            //var message = '{"data": "Hello World"}';
+
+            // And finally, publish.
+            proxemic.publish('std_msgs/String: "Hello, World"');
+
+            // Then we add a callback to be called every time a message is published on this topic.
+            proxemic.subscribe(function(message) {
+                console.log('Received message on ' + proxemic.name + ': ' + message.data);
+
+                // If desired, we can unsubscribe from the topic as well.
+                proxemic.unsubscribe();
+            });
+
+            // Calling a service
+            // -----------------
+
+            // First, we create a Service client with details of the service's name and service type.
+            var addTwoIntsClient = new ROSLIB.Service({
+                ros : ros,
+                name : '/add_two_ints',
+                serviceType : 'rospy_tutorials/AddTwoInts'
+            });
+
+            // Then we create a Service Request. The object we pass in to ROSLIB.ServiceRequest matches the
+            // fields defined in the rospy_tutorials AddTwoInts.srv file.
+            var request = new ROSLIB.ServiceRequest({
+                a : 1,
+                b : 2
+            });
+
+            // Finally, we call the /add_two_ints service and get back the results in the callback. The result
+            // is a ROSLIB.ServiceResponse object.
+            addTwoIntsClient.callService(request, function(result) {
+                console.log('Result for service call on ' + addTwoIntsClient.name + ': ' + result.sum);
+            });
+
+            // Advertising a Service
+            // ---------------------
+
+            // The Service object does double duty for both calling and advertising services
+            var setBoolServer = new ROSLIB.Service({
+                ros : ros,
+                name : '/set_bool',
+                serviceType : 'std_srvs/SetBool'
+            });
+
+            // Use the advertise() method to indicate that we want to provide this service
+            setBoolServer.advertise(function(request, response) {
+                console.log('Received service request on ' + setBoolServer.name + ': ' + request.data);
+                response['success'] = true;
+                response['message'] = 'Set successfully';
+                return true;
+            });
+
+            // Setting a param value
+            // ---------------------
+
+            ros.getParams(function(params) {
+                console.log(params);
+            });
+
+            // First, we create a Param object with the name of the param.
+            var maxVelX = new ROSLIB.Param({
+                ros : ros,
+                name : 'max_vel_y'
+            });
+
+            //Then we set the value of the param, which is sent to the ROS Parameter Server.
+            maxVelX.set(0.8);
+            maxVelX.get(function(value) {
+                console.log('MAX VAL: ' + value);
+            });
+
+            // Getting a param value
+            // ---------------------
+
+            var favoriteColor = new ROSLIB.Param({
+                ros : ros,
+                name : 'favorite_color'
+            });
+
+            favoriteColor.set('red');
+            favoriteColor.get(function(value) {
+                console.log('My robot\'s favorite color is ' + value);
+            });
+        </script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./scripts/eventemitter2.min.js"></script>
+        <script type="text/javascript" src="./scripts/bootbox.min.js"></script>
+        <script type="text/javascript" src="./scripts/roslib.min.js"></script> 
+        <script type="text/javascript" src="./scripts/clickButtons.js"></script>
+        <script type="text/javascript" src="./js/main.js"></script>
+    </body>
+</html>
